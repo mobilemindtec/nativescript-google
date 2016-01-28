@@ -132,3 +132,17 @@ exports.share = function(params){
         _AndroidApplication.currentContext.startActivity(browserIntent);                
     }
 }
+
+exports.requestUserProfile = function(result, done){
+
+    //console.log("######## google plus login: nome=" + result.getDisplayName() + ", email=" + result.getEmail() + ", id=" + result.getId())
+    //console.log("IdToken="+result.getIdToken())
+
+    var user = {
+      name: result.getDisplayName(),
+      email: result.getEmail(),
+      token: result.getIdToken()
+    }  
+
+    done(user)
+}
