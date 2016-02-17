@@ -1,2 +1,3 @@
-{ "name" : "nativescript-gplus-login",
-  "main" : "gplus-login.js" }
+{ "name" : "nativescript-google-plus",
+  "main" : "google-plus.js",
+  "version": "0.0.1" }
