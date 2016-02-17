@@ -1,6 +1,6 @@
 { "name" : "nativescript-google-plus",
   "main" : "google-plus.js",
-  "version": "0.0.1" 
+  "version": "0.0.1",
   "nativescript": {
     "platforms": {
       "ios": "1.4.0",
