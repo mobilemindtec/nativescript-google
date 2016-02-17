@@ -1,0 +1,20 @@
+buildscript {
+    dependencies {
+      classpath 'com.android.tools.build:gradle:2.0.0-alpha3'
+      classpath 'com.google.gms:google-services:2.0.0-alpha3'
+    }
+}
+
+android { 
+    productFlavors {
+        "nativescript-google-plus" {
+            dimension "nativescript-google-plus"
+        }
+    }
+}
+
+dependencies {
+  compile "com.android.support:recyclerview-v7:$suppotVer"
+  compile "com.google.android.gms:play-services-auth:8.4.0"  
+  compile "com.google.android.gms:play-services-plus:8.4.0"
+}
