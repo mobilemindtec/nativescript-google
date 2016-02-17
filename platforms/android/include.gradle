@@ -1,3 +1,14 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+      classpath 'com.android.tools.build:gradle:2.0.0-alpha3'
+      classpath 'com.google.gms:google-services:2.0.0-alpha3'
+    }
+}
+
 android { 
     productFlavors {
         "nativescript-google-plus" {
@@ -7,12 +18,8 @@ android {
 }
 
 dependencies {
-  def suppotVer = "22.2.0";
-  if(project.hasProperty("supportVersion")) {
-    suppotVer = supportVersion
-  }
-
-  compile "com.android.support:recyclerview-v7:$suppotVer"
   compile "com.google.android.gms:play-services-auth:8.4.0"  
   compile "com.google.android.gms:play-services-plus:8.4.0"
 }
+
+apply plugin: 'com.google.gms.google-services'
