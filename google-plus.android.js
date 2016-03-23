@@ -72,7 +72,8 @@ function logIn() {
         }
      }
 
-    _AndroidApplication.currentContext.startActivityForResult(signInIntent, RC_SIGN_IN); 
+    var act = _AndroidApplication.foregroundActivity || _AndroidApplication.startActivity;
+    act.startActivityForResult(signInIntent, RC_SIGN_IN); 
 
 }
 exports.logIn = logIn;
