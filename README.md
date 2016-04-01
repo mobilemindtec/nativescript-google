@@ -8,6 +8,7 @@ and dependencies use local libs
 ## Dependencies
 
 Add in classpath 'com.google.gms:google-services:1.5.0' in buildScript dependencies
+
 ```
 buildscript {
     repositories {
