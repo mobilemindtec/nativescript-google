@@ -11,7 +11,6 @@ var MyDelegate = (function (_super) {
             GGLContext.sharedInstance().configureWithError(configureError);
             
             var signIn = GIDSignIn.sharedInstance();            
-            signIn.delegate = this;
             return true;
         }
         catch (error) {
@@ -28,12 +27,6 @@ var MyDelegate = (function (_super) {
     };
     MyDelegate.prototype.applicationDidEnterBackground = function (application) {
         //Do something you want here
-    };
-    MyDelegate.prototype.signInDidSignInForUserWithError = function (signIn, user, error) {
-        console.log("## signInDidSignInForUserWithError " + error);
-    };
-    MyDelegate.prototype.signInDidDisconnectWithUserWithError = function (signIn, user, error) {
-        console.log("## signInDidDisconnectWithUserWithError " + error);
     };
     MyDelegate.ObjCProtocols = [UIApplicationDelegate];
     return MyDelegate;
