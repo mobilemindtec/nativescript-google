@@ -1,4 +1,4 @@
-# nativescript-google-login
+# nativescript-google-plus
 
 ./demo - demo app
 
