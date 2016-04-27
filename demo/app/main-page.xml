@@ -1,0 +1,16 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="loaded">
+  <ScrollView>
+	  <StackLayout>
+	    
+	    <Label text="Google login" class="title"/>
+	    <Button text="Login" tap="onLogin" />
+
+	    <Button text="Share Text" tap="onShare" />
+
+	    <Button text="Share Image" tap="onSharePhoto" />
+
+	    <Label text="{{ message }}" class="message" textWrap="true"/>
+
+	  </StackLayout>
+  </ScrollView>
+</Page>

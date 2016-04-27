@@ -1,13 +1,16 @@
-# nativescript-gplus-login
+# nativescript-google-plus
+
+./demo - demo app
+
+## Android
 
 Read Google Login Documentation at https://developers.google.com/identity/sign-in/android/start-integrating
 
 Atention!!!! Don't forget of add google-service.json at platforms/android app folder and update you android api, because gradle plugin
 and dependencies use local libs
 
-## Dependencies
+### Dependencies
 
-Add in classpath 'com.google.gms:google-services:1.5.0' in buildScript dependencies
 ```
 buildscript {
     repositories {
@@ -15,22 +18,19 @@ buildscript {
     }
 
     dependencies {
-        classpath "com.android.tools.build:gradle:1.3.1"
-        classpath 'com.google.gms:google-services:1.5.0'
+    	classpath 'com.android.tools.build:gradle:2.0.0-alpha3'
+    	classpath 'com.google.gms:google-services:+'
     }
 }
 ```
 
-Add in dependencies 
-
 ```
-  // run tns install, add this line before compile
-  compile "com.android.support:recyclerview-v7:$suppotVer"
-
-  compile "com.google.android.gms:play-services-auth:8.3.0"
+dependencies{
+  compile "com.android.support:recyclerview-v7:+"
+}
 ```
 
-## Android configuration
+### Android configuration
 
 Create a new entry at App_Resources/values/strings.xml with a api key value
 ```
@@ -44,34 +44,148 @@ Change the AndroidManifest.xml to add in
 </application>
 ```
 
-## Use in app
+## IOS
+
+Read Google IOS Login Documentation https://developers.google.com/identity/sign-in/ios/start-integrating
+
+Generate file GoogleService-Info.plist and add in App_Resources/iOS folder
+
+#### Info.plist
+
+Add and change with GoogleService-Info informations: {appurl}, {appreverseurl},{appbundleid}
 
 ```
-var GplusLogin = require("../../modules/nativescript-gplus-login"); 
 
-// callback
+<key>CLIENT_ID</key>
+<string>{appurl}</string>
+<key>EMAIL_ADDRESS</key>
+<string>ricardo@mobilemind.com.br</string>
 
-var gplusSuccessCallback = function(result) {  
-		if (app.android){
-  		alert("nome=" + result.getDisplayName() + ", email=" + result.getEmail() + ", id=" + result.getId())
-  		console.log("IdToken="+result.getIdToken())
-  	}else{
+<key>REVERSED_CLIENT_ID</key>
+<string>{appreverseurl}</string>
 
-  	}
+<key>CFBundleURLTypes</key>
+<array>
+	<dict>
+		<key>CFBundleTypeRole</key>
+		<string>Editor</string>
+		<key>CFBundleURLSchemes</key>
+		<array>
+			<string>{appurl}</string>
+		</array>
+	</dict>
+	<dict>
+		<key>CFBundleTypeRole</key>
+		<string>Editor</string>
+		<key>CFBundleURLSchemes</key>
+		<array>
+			<string>{appbundleid}</string>
+		</array>
+	</dict>
+</array>	
+
+<key>LSApplicationQueriesSchemes</key>
+<array>
+	<string>{appurl}</string>
+	<string>>{appbundleid}</string>
+</array>
+
+<key>LSRequiresIPhoneOS</key>
+<true/>
+<key>NSAppTransportSecurity</key>
+<dict>
+	<key>NSAllowsArbitraryLoads</key>
+	<true/>
+</dict>
+
+```
+
+### app.ios.js
+
+```
+var application = require("application");
+var MyDelegate = (function (_super) {
+    __extends(MyDelegate, _super);
+    function MyDelegate() {
+        _super.apply(this, arguments);
+    }
+    MyDelegate.prototype.applicationDidFinishLaunchingWithOptions = function (application, launchOptions) {
+        try {
+            var configureError = new interop.Reference();
+            GGLContext.sharedInstance().configureWithError(configureError);
+            
+            var signIn = GIDSignIn.sharedInstance();            
+            return true;
+        }
+        catch (error) {
+            console.log(error);
+        }
+    };
+    MyDelegate.prototype.applicationOpenURLSourceApplicationAnnotation = function (application, url, sourceApplication, annotation) {
+        return GIDSignIn.sharedInstance().handleURLSourceApplicationAnnotation(url, sourceApplication, annotation);
+    };
+    MyDelegate.prototype.applicationDidBecomeActive = function (application) {
+    };
+    MyDelegate.prototype.applicationWillTerminate = function (application) {
+        //Do something you want here
+    };
+    MyDelegate.prototype.applicationDidEnterBackground = function (application) {
+        //Do something you want here
+    };
+    MyDelegate.ObjCProtocols = [UIApplicationDelegate];
+    return MyDelegate;
+}(UIResponder));
+application.ios.delegate = MyDelegate;
+application.start({ moduleName: "main-page" });
+```
+
+## Use plugin
+
+```
+var GooglePlus = require("nativescript-google-plus").GooglePlus;
+
+var googleHandler
+var googleApi
+
+exports.loaded = function(args) {
+    var page = args.object;
+    
+
+    googleHandler = new GoogleHandler()
+    googleHandler.init()
 }
 
-var gplusCancelCallback = function() {
-    alert("Login was cancelled");
-}
-  
-var gplusFailCallback = function() {
-    alert("Unexpected error: Cannot get access token");
-}
+var GoogleHandler = function(){
 
-exports.signInGplus = function(){
-	GplusLoginHandler.init();
-	GplusLoginHandler.registerCallback(gplusSuccessCallback, gplusCancelCallback, gplusFailCallback)
-	GplusLoginHandler.logIn();
+	GoogleHandler.init = function(){
+		if(!googleApi){
+			googleApi = new GooglePlus()
+			googleApi.initSdk()
+			googleApi.registerCallback(this.loginSuccessCallback, this.loginCancelCallback, this.loginFailCallback)
+		}
+	}
+
+	GoogleHandler.login = function(){	
+		googleApi.logIn(this.profileInfoCallback)
+	}
+
+	GoogleHandler.profileInfoCallback = function(userProfie){
+		viewModel.set("message", "Login success: " + JSON.stringify(userProfie))
+	}
+
+	GoogleHandler.loginSuccessCallback = function(){
+		console.log("## login success")
+	}
+	
+	GoogleHandler.loginCancelCallback = function(){
+		viewModel.set("message", "action canceled by user")
+	}
+
+	GoogleHandler.loginFailCallback = function(error){
+		viewModel.set("message",  "error: " + error)
+	}
+
+	return GoogleHandler
 }
 
 ```

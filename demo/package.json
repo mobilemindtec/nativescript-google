@@ -1,0 +1,12 @@
+{
+	"nativescript": {
+		"id": "br.com.mobilemind.demo.googleplus",
+		"tns-ios": {
+			"version": "1.7.0"
+		}
+	},
+	"dependencies": {
+		"nativescript-google-plus": "file:../../nativescript-google-plus",
+		"tns-core-modules": "1.7.1"
+	}
+}
