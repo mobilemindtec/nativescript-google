@@ -1,148 +1,183 @@
 var applicationModule = require("application");
-var _isInit = false;
 var _AndroidApplication = applicationModule.android;
-var _act;
 var RC_SIGN_IN = 9001
-var mGoogleApiClient;
-var mFailCallback
-var mConnectionFailCallback
-var mSuccessCallback
-var signInIntent 
 
-function init() {
-    var activity = _AndroidApplication.foregroundActivity
-    // Configure sign-in to request the user's ID, email address, and basic
-    // profile. ID and basic profile are included in DEFAULT_SIGN_IN.
-    var gso = new com.google.android.gms.auth.api.signin.GoogleSignInOptions.Builder(com.google.android.gms.auth.api.signin.GoogleSignInOptions.DEFAULT_SIGN_IN)
-        .requestEmail()
-        .requestId()
-        .build();
+var GooglePlus = function(){
 
-    // Build a GoogleApiClient with access to the Google Sign-In API and the
-    // options specified by gso.
-    mGoogleApiClient = new com.google.android.gms.common.api.GoogleApiClient.Builder(_AndroidApplication.context.getApplicationContext())
-        .addOnConnectionFailedListener(new com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener({
-            onConnectionFailed: function(){
-                if(mConnectionFailCallback)
-                    mConnectionFailCallback()
+    var scopes = [ "profile", "email" ]
+
+    // args = {scopes, shouldFetchBasicProfile, clientID}
+    GooglePlus.initSdk = function(args) {
+
+        var self = this
+        var activity = _AndroidApplication.foregroundActivity
+        // Configure sign-in to request the user's ID, email address, and basic
+        // profile. ID and basic profile are included in DEFAULT_SIGN_IN.
+        var gso = new com.google.android.gms.auth.api.signin.GoogleSignInOptions.Builder(com.google.android.gms.auth.api.signin.GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestEmail()
+            .requestId()
+            .build();
+
+        // Build a GoogleApiClient with access to the Google Sign-In API and the
+        // options specified by gso.
+        this._googleApiClient = new com.google.android.gms.common.api.GoogleApiClient.Builder(_AndroidApplication.context.getApplicationContext())
+            .addOnConnectionFailedListener(new com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener({
+                onConnectionFailed: function(){
+                    if(self._connectionFailCallback)
+                        self._connectionFailCallback()
+                }
+            }))
+            .addApi(com.google.android.gms.auth.api.Auth.GOOGLE_SIGN_IN_API, gso)
+            .build();
+       
+        console.log("## initSdk")
+    }
+
+
+    GooglePlus.registerCallback = function(successCallback, failCallback, connectionFailCallback){
+        this._successCallback = successCallback
+        this._failCallback = failCallback
+        this._connectionFailCallback = connectionFailCallback
+
+    }
+
+    GooglePlus.handleSignInResult = function(result) {
+
+        console.log("## handleSignInResult = " + result.isSuccess())
+
+        if (result.isSuccess()) {
+            // Signed in successfully, show authenticated UI.
+            var acct = result.getSignInAccount();
+            this._successCallback(acct);
+
+            if(this._profileInfoCallback){
+                var result = {
+                    userId: acct.getId(),                  // For client-side use only!
+                    idToken: acct.getIdToken(), // Safe to send to the server
+                    fullName: acct.getDisplayName(),
+                    email: acct.getEmail(),                        
+                }
+
+                this._profileInfoCallback(result)                
             }
-        }))
-        .addApi(com.google.android.gms.auth.api.Auth.GOOGLE_SIGN_IN_API, gso)
-        .build();
-
-    signInIntent = com.google.android.gms.auth.api.Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
-}
-
-exports.init = init;
-
-function registerCallback(successCallback, failCallback, connectionFailCallback){
-    mSuccessCallback = successCallback
-    mFailCallback = failCallback
-    mConnectionFailCallback = connectionFailCallback
-}
-
-exports.registerCallback = registerCallback;
 
 
-function handleSignInResult(result) {
-    if (result.isSuccess()) {
-        // Signed in successfully, show authenticated UI.
-        var acct = result.getSignInAccount();
-        mSuccessCallback(acct);
-    } else {
-        // Signed out, show unauthenticated UI.
-        mFailCallback();
+        } else {
+            // Signed out, show unauthenticated UI.
+            this._failCallback('logIn');
+        }
     }
-}
 
-function logIn() {
 
-    var signInIntent = com.google.android.gms.auth.api.Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
-     var previousResult = _AndroidApplication.onActivityResult;
+    GooglePlus.disconnect = function(callback){
 
-      _AndroidApplication.onActivityResult = function (requestCode, resultCode, data) {
-     
-        _AndroidApplication.onActivityResult = previousResult;
-     
-        if (requestCode === RC_SIGN_IN && resultCode === android.app.Activity.RESULT_OK) {
-            var result = com.google.android.gms.auth.api.Auth.GoogleSignInApi.getSignInResultFromIntent(data);
-            handleSignInResult(result);
+        var resultCallback = new com.google.android.gms.common.api.ResultCallback({             
+            onResult: function(status) {
+                if(callback)
+                    callback()
+            }
+        })
+
+        com.google.android.gms.auth.api.Auth.GoogleSignInApi.revokeAccess(this._googleApiClient).setResultCallback(resultCallback)
+    }
+
+    GooglePlus.logOut = function(callback){
+
+        var resultCallback = new com.google.android.gms.common.api.ResultCallback({             
+            onResult: function(status) {
+                if(callback)
+                    callback()
+            }
+        })
+        
+        com.google.android.gms.auth.api.Auth.GoogleSignInApi.signOut(this._googleApiClient).setResultCallback(resultCallback)            
+    }
+
+    GooglePlus.logIn = function(profileInfoCallback){
+
+        this._profileInfoCallback = profileInfoCallback
+
+        var signInIntent = com.google.android.gms.auth.api.Auth.GoogleSignInApi.getSignInIntent(this._googleApiClient);
+        var act = _AndroidApplication.foregroundActivity || _AndroidApplication.startActivity;
+        var previousResult = act.onActivityResult;
+
+        var self = this
+        act.onActivityResult = function (requestCode, resultCode, data) {
+         
+            act.onActivityResult = previousResult;
+         
+            if (requestCode === RC_SIGN_IN && resultCode === android.app.Activity.RESULT_OK) {
+                var result = com.google.android.gms.auth.api.Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+                self.handleSignInResult(result);
+            }else{
+                self._failCallback()
+            }
+         }
+
+        
+        act.startActivityForResult(signInIntent, RC_SIGN_IN); 
+    }
+
+    GooglePlus.isLoggedIn = function(){
+        var opr = com.google.android.gms.auth.api.Auth.GoogleSignInApi.silentSignIn(this._googleApiClient);
+        return opr.isDone()
+    }
+
+    GooglePlus.share = function(){
+        //contentURL, contentTitle, imageURL, contentDescription
+
+        var activity = _AndroidApplication.foregroundActivity || _AndroidApplication.startActivity  
+        var builder = new com.google.android.gms.plus.PlusShare.Builder(activity)
+        
+        if(params.imageURL){    
+            var imageUri
+
+            if(params.imageURL.substring(0, 'http'.length) == 'http') // remote not work!!
+                imageUri = android.net.Uri.parse(params.imageURL)
+            else // local file
+                imageUri = android.net.Uri.fromFile(new java.io.File(params.imageURL))
+
+            //builder.setType("image/*")
+            builder.setStream(imageUri)        
+
         }else{
-            mFailCallback()
         }
-     }
+        
+        builder.setType("text/plain")
 
-    _AndroidApplication.currentContext.startActivityForResult(signInIntent, RC_SIGN_IN); 
-
-}
-exports.logIn = logIn;
-
-
-exports.share = function(params){
-
-    //contentURL, contentTitle, imageURL, contentDescription
-
-    var activity = _AndroidApplication.foregroundActivity
-    var builder = new com.google.android.gms.plus.PlusShare.Builder(activity)
-    
-    if(params.imageURL){    
-        var imageUri
-
-        if(params.imageURL.substring(0, 'http'.length) == 'http') // remote not work!!
-            imageUri = android.net.Uri.parse(params.imageURL)
-        else // local file
-            imageUri = android.net.Uri.fromFile(new java.io.File(params.imageURL))
-
-        //builder.setType("image/*")
-        builder.setStream(imageUri)        
-
-    }else{
-    }
-    
-    builder.setType("text/plain")
-
-    //if(params.contentDescription)    
-    builder.setText(params.contentDescription + " " + params.contentURL)
+        //if(params.contentDescription)    
+        builder.setText(params.contentDescription + " " + params.contentURL)
 
 
-    //if(params.contentURL)
-    //    builder.setContentUrl(android.net.Uri.parse(params.contentURL))
+        //if(params.contentURL)
+        //    builder.setContentUrl(android.net.Uri.parse(params.contentURL))
 
-    var intent = builder.getIntent()
+        var intent = builder.getIntent()
 
-    /*
-    var intent = new com.google.android.gms.plus.PlusShare.Builder(activity)
-            .setText("Hello Android!")
-            .setType("image/png")
-            .setContentDeepLinkId("testID",
-                    "Test Title",
-                    "Test Description",
-                    android.net.Uri.parse("https://developers.google.com/+/images/interactive-post-android.png"))
-            .getIntent()
-    */
+        /*
+        var intent = new com.google.android.gms.plus.PlusShare.Builder(activity)
+                .setText("Hello Android!")
+                .setType("image/png")
+                .setContentDeepLinkId("testID",
+                        "Test Title",
+                        "Test Description",
+                        android.net.Uri.parse("https://developers.google.com/+/images/interactive-post-android.png"))
+                .getIntent()
+        */
 
-    if (intent.resolveActivity(_AndroidApplication.context.getPackageManager()) != null) {
-        var previousResult = _AndroidApplication.onActivityResult;
-        _AndroidApplication.onActivityResult = function (requestCode, resultCode, data) {            
-            _AndroidApplication.onActivityResult = previousResult;
-        }
-        _AndroidApplication.currentContext.startActivityForResult(intent, 0)
-    }else{
-        var browserIntent = new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("market://details?id=com.google.android.apps.plus"));        
-        _AndroidApplication.currentContext.startActivity(browserIntent);                
-    }
+        if (intent.resolveActivity(_AndroidApplication.context.getPackageManager()) != null) {
+            var previousResult = _AndroidApplication.onActivityResult;
+            _AndroidApplication.onActivityResult = function (requestCode, resultCode, data) {            
+                _AndroidApplication.onActivityResult = previousResult;
+            }
+            _AndroidApplication.currentContext.startActivityForResult(intent, 0)
+        }else{
+            var browserIntent = new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("market://details?id=com.google.android.apps.plus"));        
+            _AndroidApplication.currentContext.startActivity(browserIntent);                
+        }        
+    }    
+
+    return GooglePlus
 }
 
-exports.requestUserProfile = function(result, done){
-
-    //console.log("######## google plus login: nome=" + result.getDisplayName() + ", email=" + result.getEmail() + ", id=" + result.getId())
-    //console.log("IdToken="+result.getIdToken())
-
-    var user = {
-      name: result.getDisplayName(),
-      email: result.getEmail(),
-      token: result.getIdToken()
-    }  
-
-    done(user)
-}
+exports.GooglePlus = GooglePlus
