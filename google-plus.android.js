@@ -1,5 +1,5 @@
-var applicationModule = require("application");
-var _AndroidApplication = applicationModule.android;
+var application = require("application");
+var _AndroidApplication = application.android;
 var RC_SIGN_IN = 9001
 
 var GooglePlus = function(){
@@ -10,7 +10,7 @@ var GooglePlus = function(){
     GooglePlus.initSdk = function(args) {
 
         var self = this
-        var activity = _AndroidApplication.foregroundActivity
+        var activity = _AndroidApplication.foregroundActivity || _AndroidApplication.startActivity;
         // Configure sign-in to request the user's ID, email address, and basic
         // profile. ID and basic profile are included in DEFAULT_SIGN_IN.
         var gso = new com.google.android.gms.auth.api.signin.GoogleSignInOptions.Builder(com.google.android.gms.auth.api.signin.GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -99,20 +99,20 @@ var GooglePlus = function(){
 
         var signInIntent = com.google.android.gms.auth.api.Auth.GoogleSignInApi.getSignInIntent(this._googleApiClient);
         var act = _AndroidApplication.foregroundActivity || _AndroidApplication.startActivity;
-        var previousResult = act.onActivityResult;
 
         var self = this
-        act.onActivityResult = function (requestCode, resultCode, data) {
-         
-            act.onActivityResult = previousResult;
-         
-            if (requestCode === RC_SIGN_IN && resultCode === android.app.Activity.RESULT_OK) {
-                var result = com.google.android.gms.auth.api.Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+
+        application.android.on("activityResult", function(eventData) {
+
+            if (eventData.requestCode === RC_SIGN_IN && eventData.resultCode === android.app.Activity.RESULT_OK) {
+                var result = com.google.android.gms.auth.api.Auth.GoogleSignInApi.getSignInResultFromIntent(eventData.intent);
                 self.handleSignInResult(result);
             }else{
                 self._failCallback()
             }
-         }
+
+        })
+
 
         
         act.startActivityForResult(signInIntent, RC_SIGN_IN); 
@@ -166,15 +166,12 @@ var GooglePlus = function(){
         */
 
         if (intent.resolveActivity(_AndroidApplication.context.getPackageManager()) != null) {
-            var previousResult = _AndroidApplication.onActivityResult;
-            _AndroidApplication.onActivityResult = function (requestCode, resultCode, data) {            
-                _AndroidApplication.onActivityResult = previousResult;
-            }
             _AndroidApplication.currentContext.startActivityForResult(intent, 0)
+
         }else{
             var browserIntent = new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("market://details?id=com.google.android.apps.plus"));        
-            _AndroidApplication.currentContext.startActivity(browserIntent);                
-        }        
+            _AndroidApplication.currentContext.startActivity(browserIntent);                            
+        }
     }    
 
     return GooglePlus

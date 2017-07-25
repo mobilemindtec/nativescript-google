@@ -1,12 +1,24 @@
 {
-	"nativescript": {
-		"id": "br.com.mobilemind.demo.googleplus",
-		"tns-ios": {
-			"version": "1.7.0"
-		}
-	},
-	"dependencies": {
-		"nativescript-google-plus": "file:../../nativescript-google-plus",
-		"tns-core-modules": "1.7.1"
-	}
+  "description": "NativeScript Application",
+  "license": "SEE LICENSE IN <your-license-filename>",
+  "readme": "NativeScript Application",
+  "repository": "<fill-your-repository-here>",
+  "nativescript": {
+    "id": "org.nativescript.demo",
+    "tns-android": {
+      "version": "3.0.1"
+    }
+  },
+  "dependencies": {
+    "nativescript-google-plus": "file:../",
+    "nativescript-theme-core": "~1.0.2",
+    "tns-core-modules": "3.1.0"
+  },
+  "devDependencies": {
+    "babel-traverse": "6.25.0",
+    "babel-types": "6.25.0",
+    "babylon": "6.17.4",
+    "lazy": "1.0.11",
+    "nativescript-dev-android-snapshot": "^0.*.*"
+  }
 }
