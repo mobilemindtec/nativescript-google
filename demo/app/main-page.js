@@ -3,7 +3,7 @@
 var observable = require("data/observable")
 var GooglePlus = require("nativescript-google-plus").GooglePlus;
 var fs = require("file-system");
-var viewModel = new observable.Observable({
+var viewModel = new observable.fromObject({
 	message: ""
 })
 
