@@ -22,7 +22,6 @@ var Google = function(){
         // Configure sign-in to request the user's ID, email address, and basic
         // profile. ID and basic profile are included in DEFAULT_SIGN_IN.
         var gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken("277531217719-t4sj4gv75eg3i7j5svsrifb9jno4ov74.apps.googleusercontent.com")
             .requestEmail()
             .requestId()
             .build();
@@ -67,7 +66,7 @@ var Google = function(){
             console.log("handleSignInResult error: " + err)
 
             if(this._failCallback)
-                this._failCallback("Error: " + err);
+                this._failCallback("Error: " + err.getStatusCode());
         }
 
        
@@ -99,7 +98,6 @@ var Google = function(){
 
             if (eventData.requestCode === RC_SIGN_IN) {
                 var task = GoogleSignIn.getSignedInAccountFromIntent(eventData.intent)
-                console.log("task = " + task)
 
                 task.addOnCanceledListener(new OnCanceledListener({
                     onCanceled: function(){
