@@ -1,11 +1,11 @@
-var applicationModule = require("application");
+var Application = require("@nativescript/core").Application
 
-var GooglePlus = function(){
+var Google = function(){
 
     var scopes = [ "profile", "email" ]
 
     // args = {scopes, shouldFetchBasicProfile, clientID}
-    GooglePlus.initSdk = function(args) {
+    Google.initSdk = function(args) {
 
         args = args || {shouldFetchBasicProfile: true}
 
@@ -24,34 +24,29 @@ var GooglePlus = function(){
     }
 
 
-    GooglePlus.registerCallback = function(successCallback, failCallback, connectionFailCallback){
+    Google.registerCallback = function(successCallback, failCallback){
         this._successCallback = successCallback;
         this._failCallback = failCallback;
-        this._connectionFailCallback = connectionFailCallback;
     }
 
-    GooglePlus.disconnect = function(){
+    Google.disconnect = function(){
         GIDSignIn.sharedInstance().disconnect();
     }
 
-    GooglePlus.logOut = function(){
+    Google.logOut = function(){
         GIDSignIn.sharedInstance().signOut();
     }
 
-    GooglePlus.logIn = function(profileInfoCallback){
+    Google.logIn = function(profileInfoCallback){
         this._profileInfoCallback = profileInfoCallback                    
         GIDSignIn.sharedInstance().signIn();            
     }
 
-    GooglePlus.isLoggedIn = function(){
+    Google.isLoggedIn = function(){
         return GIDSignIn.sharedInstance().hasAuthInKeychain()
     }
 
-    GooglePlus.share = function(){
-        this._failCallback("G+ sdk is deprecated for IOS")
-    }
-
-    GooglePlus.createSignInDelegate = function(){
+    Google.createSignInDelegate = function(){
 
         var self = this
         var MySignInDelegate = (function (_super) {
@@ -123,7 +118,7 @@ var GooglePlus = function(){
     }
 
 
-    return GooglePlus
+    return Google
 }
 
-exports.GooglePlus = GooglePlus
+exports.Google = Google

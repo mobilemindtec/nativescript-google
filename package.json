@@ -1,15 +1,5 @@
-{ "name" : "nativescript-google-plus",
+{ "name" : "nativescript-google",
   "main" : "index.js",
-  "version": "0.0.1",
-  "nativescript": {
-    "platforms": {
-      "ios": "3.0.0",
-      "android": "3.0.0"
-    }
-  },
-  "devDependencies": {
-    "tns-core-modules": "^3.0.0",
-    "tns-platform-declarations": "^3.0.1"
-  }
+  "version": "0.0.1"
 }
 

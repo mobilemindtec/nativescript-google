@@ -1,15 +1,13 @@
 
-android { 
+android {
     productFlavors {
-        "nativescript-google-plus" {
-            dimension "nativescript-google-plus"
+        "nativescript-google" {
+            dimension "nativescript-google"
         }
     }
 }
 
-dependencies {
-  compile "com.google.android.gms:play-services-auth:11.0.2"
-  compile "com.google.android.gms:play-services-plus:11.0.2"
-}
 
-apply plugin: 'com.google.gms.google-services'
+dependencies {
+  implementation "com.google.android.gms:play-services-auth:20.0.1"
+}

@@ -1,1 +1,1 @@
-require("utils/module-merge").merge(require("./google-plus"), exports)
+export * from "./google"
