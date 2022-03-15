@@ -66,7 +66,7 @@ var Google = function(){
             console.log("handleSignInResult error: " + err)
 
             if(this._failCallback)
-                this._failCallback("Error: " + err.getStatusCode());
+                this._failCallback("Error: " + err);
         }
 
        
